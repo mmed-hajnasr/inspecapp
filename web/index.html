@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Data Table</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css"
+    />
+
+    <!-- DataTables CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/dataTables.bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/buttons.bootstrap.min.css"
+    />
+
+    <!-- Custom CSS -->
+    <style>
+      body {
+        padding: 20px;
+      }
+
+      .dt-buttons {
+        margin-bottom: 10px;
+      }
+
+      .alert {
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+      }
+
+      .checkbox-item input {
+        margin-right: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <h2>Inspector Data Management</h2>
+
+      <div class="clearfix"></div>
+
+      <table
+        id="example"
+        class="table table-striped table-bordered"
+        cellspacing="0"
+        width="100%"
+      >
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Surname</th>
+            <th>Name</th>
+            <th>Date of Issue</th>
+            <th>Date of Expiry</th>
+            <th>ID</th>
+            <th style="text-align: center; width: 120px">
+              Actions
+              <button
+                type="button"
+                data-func="dt-add"
+                class="btn btn-success btn-xs dt-add"
+                style="margin-left: 10px"
+              >
+                <span
+                  class="glyphicon glyphicon-plus"
+                  aria-hidden="true"
+                ></span>
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be populated by JavaScript -->
+        </tbody>
+      </table>
+
+      <!-- Edit Modal -->
+      <div id="editModal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">
+                &times;
+              </button>
+              <h4 class="modal-title">Edit Inspector Data</h4>
+            </div>
+            <div class="modal-body">
+              <form id="editForm">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="edit-nb">No.:</label>
+                      <input type="text" class="form-control" id="edit-nb" name="nb">
+                    </div>
+                    <div class="form-group">
+                      <label for="edit-surname">Surname:</label>
+                      <input type="text" class="form-control" id="edit-surname" name="surname">
+                    </div>
+                    <div class="form-group">
+                      <label for="edit-name">Name:</label>
+                      <input type="text" class="form-control" id="edit-name" name="name">
+                    </div>
+                    <div class="form-group">
+                      <label for="edit-date-issue">Date of Issue:</label>
+                      <input type="text" class="form-control" id="edit-date-issue" name="date_of_issue" placeholder="DD/MM/YYYY">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="edit-date-expiry">Date of Expiry:</label>
+                      <input type="text" class="form-control" id="edit-date-expiry" name="date_of_expiry" placeholder="DD/MM/YYYY">
+                    </div>
+                    <div class="form-group">
+                      <label for="edit-id">ID:</label>
+                      <input type="text" class="form-control" id="edit-id" name="id">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label>Certifications:</label>
+                  <div class="checkbox-grid">
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="edit-med" name="MED">
+                      <label for="edit-med">MED</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="edit-lic" name="LIC">
+                      <label for="edit-lic">LIC</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="edit-ato" name="ATO">
+                      <label for="edit-ato">ATO</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="edit-trto" name="TRTO">
+                      <label for="edit-trto">TRTO</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="edit-fstd" name="FSTD">
+                      <label for="edit-fstd">FSTD</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="edit-ma" name="MA">
+                      <label for="edit-ma">MA</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="edit-gn" name="GN">
+                      <label for="edit-gn">GN</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="edit-ao" name="AO">
+                      <label for="edit-ao">AO</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="edit-ranpf" name="RANPF">
+                      <label for="edit-ranpf">RANPF</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="edit-ranpn" name="RANPN">
+                      <label for="edit-ranpn">RANPN</label>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" id="saveChanges">
+                Save Changes
+              </button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Modal -->
+      <div id="addModal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">
+                &times;
+              </button>
+              <h4 class="modal-title">Add New Inspector</h4>
+            </div>
+            <div class="modal-body">
+              <form id="addForm">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="add-nb">No.:</label>
+                      <input type="text" class="form-control" id="add-nb" name="nb">
+                    </div>
+                    <div class="form-group">
+                      <label for="add-surname">Surname:</label>
+                      <input type="text" class="form-control" id="add-surname" name="surname" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="add-name">Name:</label>
+                      <input type="text" class="form-control" id="add-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="add-date-issue">Date of Issue:</label>
+                      <input type="text" class="form-control" id="add-date-issue" name="date_of_issue" placeholder="DD/MM/YYYY">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="add-date-expiry">Date of Expiry:</label>
+                      <input type="text" class="form-control" id="add-date-expiry" name="date_of_expiry" placeholder="DD/MM/YYYY">
+                    </div>
+                    <div class="form-group">
+                      <label for="add-id">ID:</label>
+                      <input type="text" class="form-control" id="add-id" name="id">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label>Certifications:</label>
+                  <div class="checkbox-grid">
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="add-med" name="MED">
+                      <label for="add-med">MED</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="add-lic" name="LIC">
+                      <label for="add-lic">LIC</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="add-ato" name="ATO">
+                      <label for="add-ato">ATO</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="add-trto" name="TRTO">
+                      <label for="add-trto">TRTO</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="add-fstd" name="FSTD">
+                      <label for="add-fstd">FSTD</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="add-ma" name="MA">
+                      <label for="add-ma">MA</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="add-gn" name="GN">
+                      <label for="add-gn">GN</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="add-ao" name="AO">
+                      <label for="add-ao">AO</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="add-ranpf" name="RANPF">
+                      <label for="add-ranpf">RANPF</label>
+                    </div>
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="add-ranpn" name="RANPN">
+                      <label for="add-ranpn">RANPN</label>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" id="addInspector">
+                Add Inspector
+              </button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/dataTables.bootstrap.min.js"></script>
+
+    <!-- DataTables Buttons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/buttons.bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/buttons.colVis.min.js"></script>
+
+    <!-- JSZip for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+
+    <!-- pdfMake for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+
+    <!-- Eel JS -->
+    <script type="text/javascript" src="/eel.js"></script>
+
+    <!-- Your JavaScript -->
+    <script>
+      let dataTable;
+      let currentEditingRow = -1;
+
+      $(document).ready(function () {
+        document.title = "Inspector Data Table";
+        
+        // Load data from Python backend
+        loadTableData();
+        
+        // Add button click handler
+        $(document).on('click', '.dt-add', function() {
+          $('#addModal').modal('show');
+        });
+        
+        // Edit button click handler
+        $(document).on('click', '.dt-edit', function() {
+          const row = $(this).closest('tr');
+          const rowIndex = dataTable.row(row).index();
+          currentEditingRow = rowIndex;
+          
+          // Get original data from backend
+          eel.get_row_data(rowIndex)(function(rowData) {
+            if (rowData) {
+              populateEditForm(rowData);
+              $('#editModal').modal('show');
+            }
+          });
+        });
+        
+        // Delete button click handler
+        $(document).on('click', '.dt-delete', function() {
+          const row = $(this).closest('tr');
+          const rowIndex = dataTable.row(row).index();
+          
+          if (confirm('Are you sure you want to delete this inspector?')) {
+            eel.delete_row(rowIndex)(function(success) {
+              if (success) {
+                loadTableData(); // Reload table
+              } else {
+                alert('Error deleting inspector');
+              }
+            });
+          }
+        });
+        
+        // Save changes button
+        $('#saveChanges').click(function() {
+          const formData = getFormData('editForm');
+          
+          eel.update_row(currentEditingRow, formData)(function(success) {
+            if (success) {
+              $('#editModal').modal('hide');
+              loadTableData(); // Reload table
+            } else {
+              alert('Error updating inspector');
+            }
+          });
+        });
+        
+        // Add inspector button
+        $('#addInspector').click(function() {
+          const formData = getFormData('addForm');
+          
+          if (!formData.surname || !formData.name) {
+            alert('Surname and Name are required');
+            return;
+          }
+          
+          // If no nb provided, auto-generate it
+          if (!formData.nb) {
+            delete formData.nb; // Let backend handle auto-increment
+          }
+          
+          eel.add_new_row(formData)(function(success) {
+            if (success) {
+              $('#addModal').modal('hide');
+              clearForm('addForm');
+              loadTableData(); // Reload table
+            } else {
+              alert('Error adding inspector');
+            }
+          });
+        });
+        
+        // Clear forms when modals are hidden
+        $('#addModal').on('hidden.bs.modal', function() {
+          clearForm('addForm');
+        });
+        
+        $('#editModal').on('hidden.bs.modal', function() {
+          clearForm('editForm');
+        });
+      });
+      
+      function loadTableData() {
+        eel.get_table_data()(function(data) {
+          if (dataTable) {
+            dataTable.destroy();
+          }
+          
+          const tableData = data.map((row, index) => [
+            row.nb,
+            row.surname,
+            row.name,
+            row.date_of_issue,
+            row.date_of_expiry,
+            row.id,
+            `<button type="button" class="btn btn-primary btn-xs dt-edit" style="margin-right:8px;">
+               <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+             </button>
+             <button type="button" class="btn btn-danger btn-xs dt-delete">
+               <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+             </button>`
+          ]);
+          
+          dataTable = $("#example").DataTable({
+            data: tableData,
+            dom: '<"dt-buttons"Bf><"clear">lirtp',
+            paging: true,
+            pageLength: 25,
+            autoWidth: true,
+            columnDefs: [
+              { orderable: false, targets: 6 }
+            ],
+            buttons: [
+              "colvis",
+              "copyHtml5",
+              "csvHtml5",
+              "excelHtml5",
+              "pdfHtml5",
+              "print",
+            ],
+          });
+        });
+      }
+      
+      function populateEditForm(rowData) {
+        $('#edit-nb').val(rowData.nb);
+        $('#edit-surname').val(rowData.surname);
+        $('#edit-name').val(rowData.name);
+        $('#edit-date-issue').val(rowData.date_of_issue);
+        $('#edit-date-expiry').val(rowData.date_of_expiry);
+        $('#edit-id').val(rowData.id);
+        
+        // Set placeholders with original data
+        $('#edit-nb').attr('placeholder', rowData.nb);
+        $('#edit-surname').attr('placeholder', rowData.surname);
+        $('#edit-name').attr('placeholder', rowData.name);
+        $('#edit-date-issue').attr('placeholder', rowData.date_of_issue || 'DD/MM/YYYY');
+        $('#edit-date-expiry').attr('placeholder', rowData.date_of_expiry || 'DD/MM/YYYY');
+        $('#edit-id').attr('placeholder', rowData.id);
+        
+        // Set checkboxes
+        const certifications = ['MED', 'LIC', 'ATO', 'TRTO', 'FSTD', 'MA', 'GN', 'AO', 'RANPF', 'RANPN'];
+        certifications.forEach(cert => {
+          $('#edit-' + cert.toLowerCase()).prop('checked', rowData[cert] === 'X');
+        });
+      }
+      
+      function getFormData(formId) {
+        const formData = {};
+        const form = $('#' + formId);
+        
+        // Get text inputs
+        form.find('input[type="text"]').each(function() {
+          formData[$(this).attr('name')] = $(this).val();
+        });
+        
+        // Get checkboxes
+        form.find('input[type="checkbox"]').each(function() {
+          formData[$(this).attr('name')] = $(this).is(':checked') ? 'X' : '';
+        });
+        
+        return formData;
+      }
+      
+      function clearForm(formId) {
+        const form = $('#' + formId);
+        form.find('input[type="text"]').val('');
+        form.find('input[type="checkbox"]').prop('checked', false);
+      }
+    </script>
+  </body>
+</html>
