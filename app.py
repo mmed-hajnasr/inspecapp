@@ -1,10 +1,16 @@
 import csv
-
 import eel
+import os
+import shutil
+import base64
+from pathlib import Path
 
 eel.init("web")
 
-data_type1 = "data/type1.csv"
+# Ensure images directory exists
+Path("web/data/images").mkdir(parents=True, exist_ok=True)
+
+data_type1 = "web/data/type1.csv"
 
 
 # Load CSV data
@@ -76,10 +82,30 @@ def update_row(row_index, updated_data):
     """Update a specific row"""
     global csv_data
     if 0 <= row_index < len(csv_data):
+        # Handle image if present
+        if 'image' in updated_data:
+            image_data = updated_data.pop('image')
+            if image_data:
+                # Get the inspector ID
+                inspector_id = updated_data.get('id', csv_data[row_index]['id'])
+                # Save the base64 image data
+                target_path = f'web/data/images/{inspector_id}.png'
+                try:
+                    # Remove data URL prefix if present
+                    if 'base64,' in image_data:
+                        image_data = image_data.split('base64,')[1]
+                    # Decode and save the image
+                    image_bytes = base64.b64decode(image_data)
+                    with open(target_path, 'wb') as f:
+                        f.write(image_bytes)
+                except Exception as e:
+                    print(f'Error saving image: {e}')
+        
         csv_data[row_index].update(updated_data)
         save_csv_data()
         return True
     return False
+
 
 @eel.expose
 def delete_row(row_index):
@@ -96,11 +122,6 @@ def delete_row(row_index):
 def add_new_row(new_data):
     """Add a new row"""
     global csv_data
-    # Generate new nb (auto-increment)
-    max_nb = max([int(row.get("nb", 0)) for row in csv_data], default=0)
-    new_data["nb"] = str(max_nb + 1)
-
-    # Ensure all required fields exist
     required_fields = [
         "nb",
         "surname",
@@ -119,6 +140,26 @@ def add_new_row(new_data):
         "RANPF",
         "RANPN",
     ]
+    # Handle image if present
+    if 'image' in new_data:
+        image_data = new_data.pop('image')
+        if image_data:
+            # Get the inspector ID
+            inspector_id = new_data.get('id', '')
+            if inspector_id:
+                # Save the base64 image data
+                target_path = f'web/data/images/{inspector_id}.png'
+                try:
+                    # Remove data URL prefix if present
+                    if 'base64,' in image_data:
+                        image_data = image_data.split('base64,')[1]
+                    # Decode and save the image
+                    image_bytes = base64.b64decode(image_data)
+                    with open(target_path, 'wb') as f:
+                        f.write(image_bytes)
+                except Exception as e:
+                    print(f'Error saving image: {e}')
+    
     for field in required_fields:
         if field not in new_data:
             new_data[field] = ""
@@ -155,12 +196,6 @@ def save_csv_data():
             writer.writerows(csv_data)
     except Exception as e:
         print(f"Error saving CSV: {e}")
-
-
-@eel.expose
-def data_pass(data):
-    print("Received values: {}".format(str(data)))
-
 
 if __name__ == "__main__":
     eel.start("index.html", mode="firefox", size=(1200, 800))

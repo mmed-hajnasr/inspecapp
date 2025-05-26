@@ -70,6 +70,7 @@
       >
         <thead>
           <tr>
+            <th>Image</th>
             <th>No.</th>
             <th>Surname</th>
             <th>Name</th>
@@ -136,6 +137,17 @@
                     <div class="form-group">
                       <label for="edit-id">ID:</label>
                       <input type="text" class="form-control" id="edit-id" name="id">
+                    </div>
+                    <div class="form-group">
+                      <label for="edit-image">Image:</label>
+                      <div class="row">
+                        <div class="col-md-4">
+                          <img id="edit-image-preview" src="/data/images/No_image.png" alt="Inspector Image" style="width: 100px; height: 100px; object-fit: cover; margin-bottom: 10px;">
+                        </div>
+                        <div class="col-md-8">
+                          <input type="file" class="form-control" id="edit-image" name="image" accept="image/*">
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -238,6 +250,17 @@
                     <div class="form-group">
                       <label for="add-id">ID:</label>
                       <input type="text" class="form-control" id="add-id" name="id">
+                    </div>
+                    <div class="form-group">
+                      <label for="add-image">Image:</label>
+                      <div class="row">
+                        <div class="col-md-4">
+                          <img id="add-image-preview" src="/data/images/No_image.png" alt="Inspector Image" style="width: 100px; height: 100px; object-fit: cover; margin-bottom: 10px;">
+                        </div>
+                        <div class="col-md-8">
+                          <input type="file" class="form-control" id="add-image" name="image" accept="image/*">
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -377,8 +400,8 @@
         });
         
         // Save changes button
-        $('#saveChanges').click(function() {
-          const formData = getFormData('editForm');
+        $('#saveChanges').click(async function() {
+          const formData = await getFormData('editForm');
           
           eel.update_row(currentEditingRow, formData)(function(success) {
             if (success) {
@@ -391,17 +414,12 @@
         });
         
         // Add inspector button
-        $('#addInspector').click(function() {
-          const formData = getFormData('addForm');
+        $('#addInspector').click(async function() {
+          const formData = await getFormData('addForm');
           
           if (!formData.surname || !formData.name) {
             alert('Surname and Name are required');
             return;
-          }
-          
-          // If no nb provided, auto-generate it
-          if (!formData.nb) {
-            delete formData.nb; // Let backend handle auto-increment
           }
           
           eel.add_new_row(formData)(function(success) {
@@ -431,20 +449,34 @@
             dataTable.destroy();
           }
           
-          const tableData = data.map((row, index) => [
-            row.nb,
-            row.surname,
-            row.name,
-            row.date_of_issue,
-            row.date_of_expiry,
-            row.id,
-            `<button type="button" class="btn btn-primary btn-xs dt-edit" style="margin-right:8px;">
-               <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-             </button>
-             <button type="button" class="btn btn-danger btn-xs dt-delete">
-               <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-             </button>`
-          ]);
+          const tableData = data.map((row, index) => {
+            // Add timestamp to prevent caching
+            const timestamp = new Date().getTime();
+            const imageSrc = `/data/images/${row.id}.png?t=${timestamp}`;
+            const imageCell = `
+              <div class="image-cell">
+                <img src="${imageSrc}" 
+                     onerror="this.onerror=null;this.src='/data/images/No_image.png'" 
+                     alt="Inspector Image" 
+                     style="width: 50px; height: 50px; object-fit: cover;">
+              </div>
+            `;
+            return [
+              imageCell,
+              row.nb,
+              row.surname,
+              row.name,
+              row.date_of_issue,
+              row.date_of_expiry,
+              row.id,
+              `<button type="button" class="btn btn-primary btn-xs dt-edit" style="margin-right:8px;">
+                 <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+               </button>
+               <button type="button" class="btn btn-danger btn-xs dt-delete">
+                 <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+               </button>`
+            ];
+          });
           
           dataTable = $("#example").DataTable({
             data: tableData,
@@ -453,20 +485,41 @@
             pageLength: 25,
             autoWidth: true,
             columnDefs: [
-              { orderable: false, targets: 6 }
+              { orderable: false, targets: 7 }
             ],
             buttons: [
               "colvis",
               "copyHtml5",
               "csvHtml5",
               "excelHtml5",
-              "pdfHtml5",
-              "print",
-            ],
+              "pdfHtml5"
+            ]
           });
         });
       }
       
+      // Preview image when selected
+      function previewImage(input, previewId) {
+        if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            $(previewId).attr('src', e.target.result);
+          };
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
+
+      // Add image preview handlers
+      $(document).ready(function() {
+        $('#add-image').change(function() {
+          previewImage(this, '#add-image-preview');
+        });
+
+        $('#edit-image').change(function() {
+          previewImage(this, '#edit-image-preview');
+        });
+      });
+
       function populateEditForm(rowData) {
         $('#edit-nb').val(rowData.nb);
         $('#edit-surname').val(rowData.surname);
@@ -482,6 +535,14 @@
         $('#edit-date-issue').attr('placeholder', rowData.date_of_issue || 'DD/MM/YYYY');
         $('#edit-date-expiry').attr('placeholder', rowData.date_of_expiry || 'DD/MM/YYYY');
         $('#edit-id').attr('placeholder', rowData.id);
+
+        // Set current image with timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        const imageSrc = `/data/images/${rowData.id}.png?t=${timestamp}`;
+        $('#edit-image-preview').attr('src', imageSrc)
+          .on('error', function() {
+            $(this).attr('src', '/data/images/No_image.png');
+          });
         
         // Set checkboxes
         const certifications = ['MED', 'LIC', 'ATO', 'TRTO', 'FSTD', 'MA', 'GN', 'AO', 'RANPF', 'RANPN'];
@@ -490,7 +551,7 @@
         });
       }
       
-      function getFormData(formId) {
+      async function getFormData(formId) {
         const formData = {};
         const form = $('#' + formId);
         
@@ -503,6 +564,21 @@
         form.find('input[type="checkbox"]').each(function() {
           formData[$(this).attr('name')] = $(this).is(':checked') ? 'X' : '';
         });
+        
+        // Get file input
+        const imageInput = form.find('input[type="file"]')[0];
+        if (imageInput && imageInput.files.length > 0) {
+          const file = imageInput.files[0];
+          const reader = new FileReader();
+          
+          // Convert file to base64
+          const base64Promise = new Promise((resolve) => {
+            reader.onload = (e) => resolve(e.target.result);
+          });
+          reader.readAsDataURL(file);
+          
+          formData.image = await base64Promise;
+        }
         
         return formData;
       }
