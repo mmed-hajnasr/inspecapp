@@ -30,19 +30,16 @@ jobs:
         pip install pyinstaller pillow eel
 
     - name: Build with PyInstaller
+      shell: cmd
       run: |
         # Add debug information
-        echo "Python version:"
+        echo Python version:
         python --version
-        echo "Installed packages:"
+        echo Installed packages:
         pip list
         
         # Build with PyInstaller
-        pyinstaller --noconfirm --onefile --windowed \
-          --add-data "web;web" \
-          --name "InspecApp-${{ matrix.architecture }}" \
-          --clean \
-          app.py
+        pyinstaller --noconfirm --onefile --windowed --add-data "web;web" --name "InspecApp-${{ matrix.architecture }}" --clean app.py
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
