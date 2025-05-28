@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ['3.8']
+        python-version: ['3.11']
         architecture: ['x86', 'x64']
 
     steps:
@@ -31,10 +31,10 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --noconfirm --onefile --windowed --add-data "web;web" --icon "web\favicon.ico" --name "InspecApp-${{ matrix.architecture }}" app.py
+        pyinstaller --noconfirm --onefile --windowed --add-data "web;web" --name "InspecApp-${{ matrix.architecture }}" app.py
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: InspecApp-Windows-${{ matrix.architecture }}
         path: dist/InspecApp-${{ matrix.architecture }}.exe
