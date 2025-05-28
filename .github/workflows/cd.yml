@@ -1,0 +1,52 @@
+name: CD # Continuous Deployment
+
+on:
+  push:
+    tags:
+      - "[v]?[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  build:
+    name: Build Windows Executables
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ['3.8']
+        architecture: ['x86', 'x64']
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: ${{ matrix.architecture }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller pillow eel
+
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --noconfirm --onefile --windowed \
+          --add-data "web;web" \
+          --icon "web/favicon.ico" \
+          --name "InspecApp-${{ matrix.architecture }}" \
+          app.py
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: InspecApp-Windows-${{ matrix.architecture }}
+        path: dist/InspecApp-${{ matrix.architecture }}.exe
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: dist/InspecApp-${{ matrix.architecture }}.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
