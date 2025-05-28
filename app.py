@@ -1,15 +1,20 @@
 import base64
 import csv
+import os
 from pathlib import Path
+import sys
 import eel
 from PIL import Image, ImageDraw, ImageFont
 
-eel.init("web")
+# Initialize eel with the web files
+web_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web')
+eel.init(web_path)
 
 # Ensure images directory exists
-Path("web/data/images").mkdir(parents=True, exist_ok=True)
+Path(os.path.join(web_path, 'data', 'images')).mkdir(parents=True, exist_ok=True)
 
-data_path = "web/data/inspectors.csv"
+# Set data path
+data_path = os.path.join(web_path, 'data', 'inspectors.csv')
 
 
 # Load CSV data
@@ -354,4 +359,22 @@ def save_csv_data():
 
 
 if __name__ == "__main__":
-    eel.start("index.html", mode="firefox", size=(1200, 800))
+    try:
+        # Try to use the system default browser first
+        eel.start('index.html', mode='default', size=(1200, 800))
+    except (
+        SystemExit,
+        KeyboardInterrupt,
+        ConnectionError,
+        PermissionError,
+    ):
+        try:
+            # If default fails, try chrome
+            eel.start('index.html', mode='chrome', size=(1200, 800))
+        except:
+            try:
+                # If chrome fails, try edge
+                eel.start('index.html', mode='edge', size=(1200, 800))
+            except:
+                # If all else fails, try chromium
+                eel.start('index.html', mode='chromium', size=(1200, 800))
