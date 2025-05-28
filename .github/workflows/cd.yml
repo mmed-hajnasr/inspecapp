@@ -31,11 +31,7 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --noconfirm --onefile --windowed \
-          --add-data "web;web" \
-          --icon "web/favicon.ico" \
-          --name "InspecApp-${{ matrix.architecture }}" \
-          app.py
+        pyinstaller --noconfirm --onefile --windowed --add-data "web;web" --icon "web\favicon.ico" --name "InspecApp-${{ matrix.architecture }}" app.py
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
