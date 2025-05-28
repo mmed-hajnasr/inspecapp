@@ -34,7 +34,7 @@ jobs:
         pyinstaller --noconfirm --onefile --windowed --add-data "web;web" --name "InspecApp-${{ matrix.architecture }}" app.py
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: InspecApp-Windows-${{ matrix.architecture }}
         path: dist/InspecApp-${{ matrix.architecture }}.exe
