@@ -2,19 +2,23 @@ import base64
 import csv
 import os
 from pathlib import Path
-import sys
+
 import eel
 from PIL import Image, ImageDraw, ImageFont
 
 # Initialize eel with the web files
-web_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'web')
+web_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 eel.init(web_path)
 
 # Ensure images directory exists
-Path(os.path.join(web_path, 'data', 'images')).mkdir(parents=True, exist_ok=True)
+Path(os.path.join(web_path, "data", "images")).mkdir(parents=True, exist_ok=True)
+Path(os.path.join(web_path, "output")).mkdir(parents=True, exist_ok=True)
 
 # Set data path
-data_path = os.path.join(web_path, 'data', 'inspectors.csv')
+data_path = os.path.join(web_path, "data", "inspectors.csv")
+output_path = os.path.join(web_path, "output")
+front_path = os.path.join(output_path, "front.png")
+back_path = os.path.join(output_path, "back.png")
 
 
 # Load CSV data
@@ -222,7 +226,6 @@ def print_card(row_index):
 def print_front(row_index):
     template_path = "templates/front.png"
     data = get_row_data(row_index)
-    output_path = "output/front.png"
 
     image = Image.open(template_path)
     draw = ImageDraw.Draw(image)
@@ -262,8 +265,8 @@ def print_front(row_index):
             draw.text(position, str(data[field]), fill=(0, 0, 0), font=font)
 
     # Save
-    image.save(output_path)
-    print(f"front card saved to: {output_path}")
+    image.save(front_path)
+    print(f"front card saved to: {front_path}")
 
 
 def print_back(row_index):
@@ -271,25 +274,23 @@ def print_back(row_index):
     # Sample qualifications data (X = checked, empty = unchecked)
     data = get_row_data(row_index)
     inspector_type = int(data["type"])
-    match data["type"]:
-        case "1":
-            template_path = "templates/PEL-AIR-OPS.png"
-            x = 190
-            y = 280
-            step = 65
-        case "2":
-            template_path = "templates/AGA.png"
-            x = 310
-            y = 275
-            step = 190
-        case "3":
-            template_path = "templates/ANS.png"
-            x = 225
-            y = 325
-            step = 110
-        case _:
-            raise TypeError("type needs to be 1 to 3")
-    output_path = "output/back.png"
+    if inspector_type == 1:
+        template_path = "templates/PEL-AIR-OPS.png"
+        x = 190
+        y = 280
+        step = 65
+    elif inspector_type == 2:
+        template_path = "templates/AGA.png"
+        x = 310
+        y = 275
+        step = 190
+    elif inspector_type == 3:
+        template_path = "templates/ANS.png"
+        x = 225
+        y = 325
+        step = 110
+    else:
+        raise TypeError("type needs to be 1 to 3")
 
     qualifications = [
         [],
@@ -314,8 +315,8 @@ def print_back(row_index):
         draw.text(position, data[qual], fill=(0, 0, 0), font=font)
 
     # Save
-    image.save(output_path)
-    print(f"back card saved to: {output_path}")
+    image.save(back_path)
+    print(f"back card saved to: {back_path}")
 
 
 def save_csv_data():
@@ -359,22 +360,4 @@ def save_csv_data():
 
 
 if __name__ == "__main__":
-    try:
-        # Try to use the system default browser first
-        eel.start('index.html', mode='default', size=(1200, 800))
-    except (
-        SystemExit,
-        KeyboardInterrupt,
-        ConnectionError,
-        PermissionError,
-    ):
-        try:
-            # If default fails, try chrome
-            eel.start('index.html', mode='chrome', size=(1200, 800))
-        except:
-            try:
-                # If chrome fails, try edge
-                eel.start('index.html', mode='edge', size=(1200, 800))
-            except:
-                # If all else fails, try chromium
-                eel.start('index.html', mode='chromium', size=(1200, 800))
+    eel.start("index.html", mode="default", size=(1200, 800))
