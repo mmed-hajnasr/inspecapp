@@ -218,9 +218,86 @@ def add_new_row(new_data):
 
 
 @eel.expose
+def send_to_evolis_printer(front_image_path, back_image_path):
+    """Send both sides of the card to the Evolis Primacy printer using win32print"""
+    try:
+        import win32print
+        import win32ui
+        from PIL import ImageWin
+        
+        # Find Evolis printer
+        printer_name = None
+        for p in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL):
+            if 'evolis' in p[2].lower() or 'primacy' in p[2].lower():
+                printer_name = p[2]
+                break
+                
+        if not printer_name:
+            print("Error: Evolis Primacy printer not found")
+            return False
+            
+        # Open the printer
+        hprinter = win32print.OpenPrinter(printer_name)
+        try:
+            # Load both images
+            front_image = Image.open(front_image_path)
+            back_image = Image.open(back_image_path)
+            
+            # Start the print job
+            hdc = win32ui.CreateDC()
+            hdc.CreatePrinterDC(printer_name)
+            
+            # Start the document
+            hdc.StartDoc('Card Print')
+            
+            # Calculate dimensions (CR80 card size)
+            dpi = 300
+            card_width_mm = 85.6
+            card_height_mm = 54.0
+            width_pixels = int(card_width_mm * dpi / 25.4)
+            height_pixels = int(card_height_mm * dpi / 25.4)
+            
+            # Print front side
+            hdc.StartPage()
+            dib = ImageWin.Dib(front_image)
+            dib.draw(hdc.GetHandleOutput(), (0, 0, width_pixels, height_pixels))
+            hdc.EndPage()
+            
+            # Set printer to flip card (Evolis-specific command)
+            # Note: You might need to adjust this command based on your specific Evolis model
+            win32print.DeviceCapabilities(printer_name, "", win32print.DC_DUPLEX, None)
+            
+            # Print back side
+            hdc.StartPage()
+            dib = ImageWin.Dib(back_image)
+            dib.draw(hdc.GetHandleOutput(), (0, 0, width_pixels, height_pixels))
+            hdc.EndPage()
+            
+            # End the document
+            hdc.EndDoc()
+            
+            print("Card printed successfully (both sides)")
+            return True
+            
+        finally:
+            win32print.ClosePrinter(hprinter)
+            
+    except ImportError:
+        print("Error: win32print or win32ui not installed. Please install pywin32")
+        return False
+    except Exception as e:
+        print(f"Error printing: {e}")
+        return False
+
+@eel.expose
 def print_card(row_index):
+    # Generate both sides of the card
     print_front(row_index)
     print_back(row_index)
+    
+    # Send both sides to printer in a single job
+    if send_to_evolis_printer(front_path, back_path):
+        print("Card printed successfully")
 
 
 def print_front(row_index):

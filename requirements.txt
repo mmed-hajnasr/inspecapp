@@ -1,2 +1,3 @@
 eel
 pillow
+pywin32
